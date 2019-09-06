@@ -20,6 +20,7 @@
  uint16_t temp;
  uint8_t counter;
  uint16_t data;
+ error_t lol;
 
    event void Boot.booted() {
 	call AMControl.start();
@@ -38,6 +39,12 @@
 	}
 
     	event void Timer0.fired() {
+	call CC2420Config.setChannel(12);			//channel
+			lol = call CC2420Config.sync();				//channel
+			while(lol != SUCCESS)					//channel
+			{
+			lol = call CC2420Config.sync();
+			}
 	BroadcastbyCC* newpkt = (BroadcastbyCC*)(call Packet.getPayload(&pkt, sizeof(BroadcastbyCC)));
 	newpkt->CCid = TOS_NODE_ID;
 	if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BroadcastbyCC)) == SUCCESS) {
@@ -49,6 +56,9 @@
 	if (&pkt == msg) {
 		  busy = FALSE;
 		}
+	}
+	event Syncdone(error_t error)
+	{
 	}
 
 	event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
