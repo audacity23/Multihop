@@ -20,7 +20,7 @@
  uint16_t temp;
  uint8_t counter;
  uint16_t data;
- error_t lol;
+ error_t lol;		//new
 
    event void Boot.booted() {
 	call AMControl.start();
@@ -28,7 +28,7 @@
 
     event void AMControl.startDone(error_t err) {
 	if (err == SUCCESS) {
-        call Timer0.startOneShot(TIMER_PERIOD_MILLI);
+        call Timer0.startOneShot(TIMER_PERIOD_MILLI);			//new
    	}
 	else {
 	call AMControl.start();
@@ -38,7 +38,7 @@
 	event void AMControl.stopDone(error_t err) {
 	}
 
-    	event void Timer0.fired() {
+    	event void Timer0.fired() {						//new
 	call CC2420Config.setChannel(12);			//channel
 			lol = call CC2420Config.sync();				//channel
 			while(lol != SUCCESS)					//channel
@@ -52,12 +52,12 @@
 			}
 	}
 
-	event void AMSend.sendDone(message_t* msg, error_t error) {
+	event void AMSend.sendDone(message_t* msg, error_t error) {			//new
 	if (&pkt == msg) {
 		  busy = FALSE;
 		}
 	}
-	event Syncdone(error_t error)
+	event Syncdone(error_t error)				//new
 	{
 	}
 
