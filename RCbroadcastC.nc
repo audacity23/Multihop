@@ -4,7 +4,9 @@
 #include "CentralCoord.h"
 #include "mobiledata.h"
 #include "printf.h"
-														//different frequencies pe msg ko sunna hai...
+#include "ApplicationDefinitions.h"			//new
+#include "RssiDemoMessages.h"				//new
+
  
  module RCbroadcastC {
   uses interface Boot;
@@ -14,6 +16,16 @@
   uses interface AMPacket;
   uses interface AMSend;
   uses interface SplitControl as AMControl;
+  uses interface Intercept as RssiMsgIntercept;				//new
+  
+  #ifdef __CC2420_H__							//new
+  uses interface CC2420Packet;
+#elif defined(TDA5250_MESSAGE_H)
+  uses interface Tda5250Packet;    
+#else
+  uses interface PacketField<uint8_t> as PacketRSSI;
+#endif 
+  
 }
  
  implementation {
@@ -21,7 +33,9 @@
   bool busy = FALSE;
   message_t pkt;
   int count=0;
-  
+  uint16_t CCID;				//new
+  uint16_t duplicateCC_id;			//new
+  uint16_t getRssi(message_t *msg);		//new
 	uint8_t counter;
 
    event void Boot.booted() {
@@ -30,7 +44,6 @@
 
    event void AMControl.startDone(error_t err) {
 	if (err == SUCCESS) {
-     	call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
      	//call Timer0.start
 	}
 	else {
@@ -42,36 +55,43 @@
 	}
 
 ->	event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
-		if (len == sizeof(BroadcastMsg)) {
-			BroadcastMsg* newpkt = (BroadcastMsg*)payload;
-			temp = newpkt->nodeid;
-			if (temp == 1){
-				counter = newpkt->counter;		
-				call Leds.set(newpkt->counter);
-				printf("data number : %u \t received from node 1\n",counter);
-				}
+		if (len == sizeof(BroadcastbyCC)) {				//new
+			BroadcastbyCC* newpkt = (BroadcastbyCC*)payload;
+			CCID = newpkt->CCid;
+			if(newpkt->duplicateCCid == CCID) 
+			{						//new
+			duplicateCC_id = newpkt->duplicateCCid;
+			call Timer0.startOneShot(TOS_NODE_ID*10);
+			}
+			else if(newpkt->duplicateCCid < TOS_NODE_ID || )
+			{
+			duplicateCC_id = newpkt->duplicateCCid;
+			call Timer0.startOneShot(TOS_NODE_ID*10);
 			}
 		return msg;
 	}
-    	event void Timer0.fired() {
-		counter++;	
+    	event void Timer0.fired() {							//new
 		if (!busy) {
-			BroadcastMsg* newpkt = (BroadcastMsg*)(call Packet.getPayload(&pkt, sizeof(BroacastMsg)));
-			//newpkt->data = 1;
-			//printf(newpkt->data);
-			//printf("sending to node 2 ");
-			newpkt->nodeid = TOS_NODE_ID;
-			newpkt->counter = data;			//kya data(broadcast table) bhejna hai?
-			if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BroadcastMsg)) == SUCCESS) {
+			BroadcastbyCC* newpkt = (BroadcastbyCC*)(call Packet.getPayload(&pkt, sizeof(BroadcastbyCC)));
+			newpkt->ccid = CCID;
+			newpkt->duplicateCCid = TOS_NODE_ID;
+			if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BroadcastbyCC)) == SUCCESS) {
 				busy = TRUE;
 				}
 		}
 	}
+	
+	event bool RssiMsgIntercept.forward(message_t *msg,void *payload,uint8_t len) {
+    RssiMsg *rssiMsg = (RssiMsg*) payload;
+    rssiMsg->rssi = getRssi(msg);
+    return TRUE;
+  }
+	
 
 	// event void sendDone(message_t* msg, error_t error) {
 	// }
 
-	event void AMSend.sendDone(message_t* msg, error_t error) {
+	event void AMSend.sendDone(message_t* msg, error_t error) {				//new
 		if (&pkt == msg) {
 		  busy = FALSE;
 		}
