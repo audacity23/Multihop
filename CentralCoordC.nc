@@ -47,6 +47,7 @@
 			}
 	BroadcastbyCC* newpkt = (BroadcastbyCC*)(call Packet.getPayload(&pkt, sizeof(BroadcastbyCC)));
 	newpkt->CCid = TOS_NODE_ID;
+	newpkt->duplicateCCid ->TOS_NODE_ID;
 	if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BroadcastbyCC)) == SUCCESS) {
 				busy = TRUE;
 			}
