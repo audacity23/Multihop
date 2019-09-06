@@ -27,7 +27,7 @@
 
     event void AMControl.startDone(error_t err) {
 	if (err == SUCCESS) {
-        call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
+        call Timer0.startOneShot(TIMER_PERIOD_MILLI);
    	}
 	else {
 	call AMControl.start();
@@ -38,9 +38,17 @@
 	}
 
     	event void Timer0.fired() {
+	BroadcastbyCC* newpkt = (BroadcastbyCC*)(call Packet.getPayload(&pkt, sizeof(BroadcastbyCC)));
+	newpkt->CCid = TOS_NODE_ID;
+	if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(BroadcastbyCC)) == SUCCESS) {
+				busy = TRUE;
+			}
 	}
 
 	event void AMSend.sendDone(message_t* msg, error_t error) {
+	if (&pkt == msg) {
+		  busy = FALSE;
+		}
 	}
 
 	event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
