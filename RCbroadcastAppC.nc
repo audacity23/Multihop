@@ -12,7 +12,6 @@
    components RCbroadcastC as App;
    components new TimerMilliC() as Timer0;
    components new TimerMilliC() as Timer1;
-   components BaseStationC;                           //new
    components ActiveMessageC;
    components new AMSenderC(AM_BROADCASTRC); 	
    components SerialPrintfC,SerialStartC;
@@ -24,5 +23,4 @@
    App.AMPacket -> AMSenderC;
    App.AMSend -> AMSenderC;
    App.AMControl -> ActiveMessageC;
-   App.Intercept-> BaseStationC.RadioIntercept[AM_RSSIMSG];         //new
  }
