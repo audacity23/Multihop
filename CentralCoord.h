@@ -6,6 +6,10 @@
    TIMER_PERIOD_MILLI = 10
  };
  
+typedef nx_struct BroadcastbyCC{
+ nx_uint16_t CCid;
+} BroadcastbyCC;
+
 typedef nx_struct CentralCoordMsg {
   nx_uint16_t nodeid;
   nx_uint16_t counter;
