@@ -8,6 +8,7 @@
  
 typedef nx_struct BroadcastbyCC {	//new
   nx_uint16_t CCid;
+ nx_uint16_t duplicateCCid;
 } BroadcastbyCC;
 
 typedef nx_struct RCtoCCMsg {	//RC to CC message structure
