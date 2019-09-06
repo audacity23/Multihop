@@ -4,8 +4,6 @@
 #include "CentralCoord.h"
 #include "mobiledata.h"
 #include "printf.h"
-#include "ApplicationDefinitions.h"			//new
-#include "RssiDemoMessages.h"				//new
 
  
  module RCbroadcastC {
@@ -16,17 +14,6 @@
   uses interface AMPacket;
   uses interface AMSend;
   uses interface SplitControl as AMControl;
-  uses interface Intercept as RssiMsgIntercept;				//new
-  
-  #ifdef __CC2420_H__							//new
-  uses interface CC2420Packet;
-#elif defined(TDA5250_MESSAGE_H)
-  uses interface Tda5250Packet;    
-#else
-  uses interface PacketField<uint8_t> as PacketRSSI;
-#endif 
-  
-}
  
  implementation {
 
@@ -35,7 +22,6 @@
   int count=0;
   uint16_t CCID;				//new
   uint16_t duplicateCC_id;			//new
-  uint16_t getRssi(message_t *msg);		//new
 	uint8_t counter;
 
    event void Boot.booted() {
@@ -80,12 +66,6 @@
 				}
 		}
 	}
-	
-	event bool RssiMsgIntercept.forward(message_t *msg,void *payload,uint8_t len) {
-    RssiMsg *rssiMsg = (RssiMsg*) payload;
-    rssiMsg->rssi = getRssi(msg);
-    return TRUE;
-  }
 	
 
 	// event void sendDone(message_t* msg, error_t error) {
