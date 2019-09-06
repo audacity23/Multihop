@@ -8,6 +8,7 @@
  
 typedef nx_struct BroadcastbyCC{
  nx_uint16_t CCid;
+ nx_uint16_t duplicateCCid;
 } BroadcastbyCC;
 
 typedef nx_struct CentralCoordMsg {
